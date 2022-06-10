@@ -1,4 +1,4 @@
-from flask_restful import Api, Resource;
+from flask_restful import Api, Resource, reqparse;
 
 hoteis = [
   {
@@ -51,10 +51,67 @@ class Hotel(Resource):
       }, 404; 
     
     def post(self, hotel_id):
-      pass
+      args = reqparse.RequestParser();
+      
+      args.add_argument('nome', type=str, required=True, help='The field "nome" cannot be left blank');
+      args.add_argument('estrelas', type=float, required=True, help='The field "estrelas" cannot be left blank');
+      args.add_argument('diaria', type=float, required=True, help='The field "diaria" cannot be left blank');
+      args.add_argument('cidade', type=str, required=True, help='The field "nome" cannot be left blank');
+      
+      data = args.parse_args();
+      
+      for hotel in hoteis:
+        if hotel['nome'] == data['nome']:
+          return {
+            'status': 'erro',
+            'mensagem': 'Hotel already exists',
+          }, 400;
+      
+      new_hotel = {
+        'id': len(hoteis) + 1,
+        'nome': data['nome'],
+        'estrelas': data['estrelas'],
+        'diaria': data['diaria'],
+        'cidade': data['cidade'],
+      }
+      
+      hoteis.append(new_hotel);
+      
+      return {
+        'hotel': new_hotel,
+        'mensagem': 'Hotel added',
+        'status': 'ok',
+      }, 200;
     
     def put(self, hotel_id):
-      pass
+      args = reqparse.RequestParser();
+      
+      args.add_argument('nome', type=str, required=True, help='The field "nome" cannot be left blank');
+      args.add_argument('estrelas', type=float, required=True, help='The field "estrelas" cannot be left blank');
+      args.add_argument('diaria', type=float, required=True, help='The field "diaria" cannot be left blank');
+      args.add_argument('cidade', type=str, required=True, help='The field "nome" cannot be left blank');
+      
+      data = args.parse_args();
+      
+      for hotel in hoteis:
+        if hotel_id == hotel['id']:
+          hotel['nome'] = data['nome'];
+          hotel['estrelas'] = data['estrelas'];
+          hotel['diaria'] = data['diaria'];
+          hotel['cidade'] = data['cidade'];
+          
+          return {
+            'hotel': hotel,
+            'mensagem': 'Hotel updated',
+            'status': 'ok',
+          }, 200;
+        else :
+          return {
+            'status': 'erro',
+            'mensagem': 'Hotel not found',
+          }, 404;
+        
+      
       
     def delete(self, hotel_id):
       pass
