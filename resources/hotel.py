@@ -1,3 +1,4 @@
+import re
 from flask_restful import Api, Resource, reqparse;
 
 hoteis = [
@@ -40,10 +41,16 @@ class Hoteis(Resource):
       };
       
 class Hotel(Resource):
-    def get(self, hotel_id): 
+    def find_hotel(self, hotel_id):
       for hotel in hoteis:
         if hotel['id'] == hotel_id:
           return hotel;
+  
+    def get(self, hotel_id): 
+      hotel = self.find_hotel(hotel_id);
+      
+      if hotel:
+        return hotel;
       
       return {
         'status': 'erro',
@@ -93,29 +100,31 @@ class Hotel(Resource):
       
       data = args.parse_args();
       
-      for hotel in hoteis:
-        if hotel_id == hotel['id']:
-          hotel['nome'] = data['nome'];
-          hotel['estrelas'] = data['estrelas'];
-          hotel['diaria'] = data['diaria'];
-          hotel['cidade'] = data['cidade'];
+      hotel = self.find_hotel(hotel_id);
+      
+      if hotel:
+        hotel['nome'] = data['nome'];
+        hotel['estrelas'] = data['estrelas'];
+        hotel['diaria'] = data['diaria'];
+        hotel['cidade'] = data['cidade'];
           
-          return {
-            'hotel': hotel,
-            'mensagem': 'Hotel updated',
-            'status': 'ok',
-          }, 200;
-        else :
-          return {
-            'status': 'erro',
-            'mensagem': 'Hotel not found',
-          }, 404;
+        return {
+          'hotel': hotel,
+          'mensagem': 'Hotel updated',
+          'status': 'ok',
+        }, 200;
+          
+      return {
+        'status': 'erro',
+        'mensagem': 'Hotel not found',
+      }, 404;
         
       
       
     def delete(self, hotel_id):
-      for hotel in hoteis:
-        if hotel_id == hotel['id']:
+      hotel = self.find_hotel(hotel_id);
+
+      if hotel:
           hoteis.remove(hotel);
           
           return {
@@ -123,7 +132,7 @@ class Hotel(Resource):
             'mensagem': 'Hotel deleted',
           }, 200;
         
-        return {
-          'status': 'erro',
-          'mensagem': 'Hotel not found',
-        }, 404;
+      return {
+        'status': 'erro',
+        'mensagem': 'Hotel not found',
+      }, 404;
