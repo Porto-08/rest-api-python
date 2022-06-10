@@ -114,4 +114,16 @@ class Hotel(Resource):
       
       
     def delete(self, hotel_id):
-      pass
+      for hotel in hoteis:
+        if hotel_id == hotel['id']:
+          hoteis.remove(hotel);
+          
+          return {
+            'status': 'ok',
+            'mensagem': 'Hotel deleted',
+          }, 200;
+        
+        return {
+          'status': 'erro',
+          'mensagem': 'Hotel not found',
+        }, 404;
