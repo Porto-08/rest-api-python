@@ -1,5 +1,6 @@
 from random import randint
-from flask_restful import Api, Resource, reqparse;
+from flask_restful import Resource, reqparse;
+from models.Hotel import HotelModel;
 
 hoteis = [
   {
@@ -32,6 +33,7 @@ hoteis = [
   }
 ];
 
+
 class Hoteis(Resource):
     def get(self): 
       return {
@@ -47,16 +49,12 @@ class Hotel(Resource):
     args.add_argument('diaria', type=float, required=True, help='The field "diaria" cannot be left blank');
     args.add_argument('cidade', type=str, required=True, help='The field "nome" cannot be left blank');
       
-    def find_hotel(self, hotel_id):
-      for hotel in hoteis:
-        if hotel['id'] == hotel_id:
-          return hotel;
-  
     def get(self, hotel_id): 
-      hotel = self.find_hotel(hotel_id);
+      hotel = HotelModel.find_hotel(hotel_id);
+    
       
       if hotel:
-        return hotel;
+        return hotel.json(hotel.hotel_id);
       
       return {
         'status': 'erro',
@@ -64,37 +62,38 @@ class Hotel(Resource):
       }, 404; 
     
     def post(self, hotel_id):
-      data = self.args.parse_args();
-      
-      for hotel in hoteis:
-        if hotel['nome'] == data['nome']:
-          return {
+      if HotelModel.find_hotel(hotel_id):
+        return {
             'status': 'erro',
             'mensagem': 'Hotel already exists',
-          }, 400;
+        }, 400;
+         
+      data = self.args.parse_args();
+      hotel = HotelModel(**data);
       
-      new_hotel = {
-        'id': randint(1, 1000 * len(hoteis)),
-        **data,
-      };
-      
-      hoteis.append(new_hotel);
-      
-      return {
-        'hotel': new_hotel,
-        'mensagem': 'Hotel added',
-        'status': 'ok',
-      }, 200;
-    
+      try:
+        hotel.save();
+        
+        return {
+          'hotel': hotel.json(hotel.hotel_id),
+          'mensagem': 'Hotel saved successfully',
+          'status': 'ok',
+        }, 200;
+        
+      except Exception as e:
+        return {
+          'status': 'erro',
+          'mensagem': 'An error occurred inserting the hotel',
+          'error': str(e),
+        }, 500;
+        
     def put(self, hotel_id):
       data = self.args.parse_args();
       
       hotel = self.find_hotel(hotel_id);
       
-      updated_hotel = {
-        'id': hotel_id,
-        **data,
-      }
+      updated_hotel_obj = HotelModel(hotel_id, **data);
+      updated_hotel = updated_hotel_obj.json();
       
       if hotel:
         hotel.update(updated_hotel);
@@ -110,8 +109,6 @@ class Hotel(Resource):
         'mensagem': 'Hotel not found',
       }, 404;
         
-      
-      
     def delete(self, hotel_id):
       hotel = self.find_hotel(hotel_id);
 
