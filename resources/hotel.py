@@ -2,46 +2,26 @@ from random import randint
 from flask_restful import Resource, reqparse;
 from models.Hotel import HotelModel;
 
-hoteis = [
-  {
-    'id': randint(1, 1000 * 4),
-    'nome': 'Hotel A',
-    'estrelas': 4.3,
-    'diaria': 220,
-    'cidade': 'São Paulo',
-  },
-  {
-    'id': randint(1, 1000 * 4),
-    'nome': 'Hotel B',
-    'estrelas': 2.5,
-    'diaria': 50,
-    'cidade': 'Rio de Janeiro',
-  },
-  {
-    'id': randint(1, 1000 * 4),
-    'nome': 'Hotel C',
-    'estrelas': 5,
-    'diaria': 1000,
-    'cidade': 'Minas Gerais',
-  },
-  {
-    'id': randint(1, 1000 * 4),
-    'nome': 'Hotel 5',
-    'estrelas': 3.0,
-    'diaria': 150,
-    'cidade': 'São Paulo',
-  }
-];
-
-
-class Hoteis(Resource):
-    def get(self): 
-      return {
-        'hoteis': hoteis,
-        'total': len(hoteis),
-        'status': 'ok',
-      };
+class Hoteis(Resource):  
+  def get(self):
+    try:
+      hoteis = HotelModel.get();
       
+      # Retorna um json com todos os hoteis
+      hoteisJson = [hotel.json(hotel.hotel_id) for hotel in hoteis];
+      
+      return {
+        'status': 'success',
+        'hoteis': hoteisJson,
+        'total': len(hoteis),
+      }
+    except Exception as e:
+      return {
+        'status': 'error',
+        'message': 'Erro ao buscar hoteis',
+        'error': str(e),
+      }
+    
 class Hotel(Resource):
     args = reqparse.RequestParser();
     args.add_argument('nome', type=str, required=True, help='The field "nome" cannot be left blank');

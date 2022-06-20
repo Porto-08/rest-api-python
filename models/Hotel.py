@@ -1,4 +1,5 @@
 from ast import Try
+import re
 from database.sql_alchemy import database;
 
 
@@ -26,6 +27,9 @@ class HotelModel(database.Model):
       'diaria': self.diaria,
       'cidade': self.cidade,
     };
+    
+  def get():
+    return HotelModel.query.all();
     
   @classmethod
   def find_hotel(cls, hotel_id):
