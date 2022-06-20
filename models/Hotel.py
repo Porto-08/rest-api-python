@@ -39,3 +39,14 @@ class HotelModel(database.Model):
   def save(self):
       database.session.add(self);
       database.session.commit();
+      
+  def update(self, nome, estrelas, diaria, cidade):
+      self.nome = nome;
+      self.estrelas = estrelas;
+      self.diaria = diaria;
+      self.cidade = cidade;
+      database.session.commit();
+      
+  def delete(self):
+      database.session.delete(self);
+      database.session.commit();

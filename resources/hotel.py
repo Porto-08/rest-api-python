@@ -88,32 +88,36 @@ class Hotel(Resource):
         }, 500;
         
     def put(self, hotel_id):
-      data = self.args.parse_args();
+      data = self.args.parse_args();      
+      hotelFinded = HotelModel.find_hotel(hotel_id);
       
-      hotel = self.find_hotel(hotel_id);
-      
-      updated_hotel_obj = HotelModel(hotel_id, **data);
-      updated_hotel = updated_hotel_obj.json();
-      
-      if hotel:
-        hotel.update(updated_hotel);
+      if hotelFinded:
+        try:
+          hotelFinded.update(**data);
+                      
+          return {
+            'hotel': hotelFinded.json(hotelFinded.hotel_id),
+            'mensagem': 'Hotel updated',
+            'status': 'ok',
+          }, 200;
           
-        return {
-          'hotel': hotel,
-          'mensagem': 'Hotel updated',
-          'status': 'ok',
-        }, 200;
+        except Exception as e:
+          return {
+            'status': 'erro',
+            'mensagem': 'An error occurred updating the hotel',
+          }, 500;
           
       return {
         'status': 'erro',
         'mensagem': 'Hotel not found',
-      }, 404;
+      }
+          
         
     def delete(self, hotel_id):
-      hotel = self.find_hotel(hotel_id);
+      hotel = HotelModel.find_hotel(hotel_id);
 
       if hotel:
-          hoteis.remove(hotel);
+          hotel.delete();
           
           return {
             'status': 'ok',
